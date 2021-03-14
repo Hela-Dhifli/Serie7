@@ -29,14 +29,14 @@ public class ActorsAndMovies {
         
         // Question 1 
         
-        System.out.println("\n******* Le nombre de films");
+        System.out.println("\n******* Le nombre de films référencées dans le fichier");
         
         System.out.println(movies.size());
         
         // Question 2
         
         	//Création d'un stream d'acteurs
-        System.out.println("\n******* Le nombre d'acteurs");
+        System.out.println("\n******* Le nombre d'acteurs référencées dans le fichier");
         Stream<Actor> nbActeurs =
         		movies.stream()
         		.flatMap(m -> m.actors().stream());
