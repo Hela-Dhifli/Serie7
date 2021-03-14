@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -36,36 +37,36 @@ public class ActorsAndMovies {
         
         	//Création d'un stream d'acteurs
         System.out.println("\n******* Le nombre d'acteurs");
-        Stream<Actor> flatMap =
+        Stream<Actor> nbActeurs =
         		movies.stream()
         		.flatMap(m -> m.actors().stream());
         
-        System.out.println(flatMap.count());
+        System.out.println(nbActeurs.count());
         
         	//Sans doublons
         System.out.println("\n******* Le nombre d'acteurs sans doublons");
-        Stream<Actor> flatMap2 =
+        Stream<Actor> nbActeurs2 =
         		movies.stream()
         		.flatMap(actor -> actor.actors().stream())
         		.distinct();
         
-        System.out.println(flatMap2.count());
+        System.out.println(nbActeurs2.count());
         
         // Question 3
         
-        System.out.println("\n******* Le nombre d'année");
+        System.out.println("\n******* Le nombre d'année référencées dans le fichier");
         	//Stream d'année : correspondre un film à une année -> map()
-        long anneesFilm = 
+        long nbAnnée = 
                 movies.stream()
                 .map(movie -> movie.releaseYear())
                 .distinct()
                 .count();
         
-        System.out.println(anneesFilm);
+        System.out.println(nbAnnée);
         
         // Question 4
         
-        System.out.println("\n******* Année du film le plus vieux");
+        System.out.println("\n******* Année du film le plus vieux\n");
         int anneeMin = 
         		movies.stream()
         		.map(movie -> movie.releaseYear())
@@ -73,7 +74,7 @@ public class ActorsAndMovies {
         		.orElseThrow();
         System.out.println(anneeMin);
         
-        System.out.println("\n******* Année du film le plus récent");
+        System.out.println("\n******* Année du film le plus récent\n");
         int anneeMax = 
         		movies.stream()
         		.mapToInt(movie -> movie.releaseYear())
@@ -83,9 +84,9 @@ public class ActorsAndMovies {
 
         // Question 5
         
-        System.out.println("\n******* Année où le plus grand nombre de films est sorti");
+        System.out.println("\n******* Année où le plus grand nombre de films est sorti\n");
         
-        Entry<Integer, Long> maxFilmAnnee = movies.stream()
+        Entry<Integer, Long> anneeMaxFilm = movies.stream()
         		.collect(
         							Collectors.groupingBy(
         													e->e.releaseYear(),
@@ -96,11 +97,12 @@ public class ActorsAndMovies {
         		.max(Map.Entry.comparingByValue())
         		.orElseThrow();
      
-        System.out.println(maxFilmAnnee);
+        System.out.println("L'année est " +  anneeMaxFilm.getKey());
+        System.out.println("Le nombre de films est " +  anneeMaxFilm.getValue());
         
         // Question 6
         
-        System.out.println("\n******* Film avec le plus grand nombre d'acteur ");
+        System.out.println("\n******* Film avec le plus grand nombre d'acteur\n ");
         Movie maxActeurs = 
         		movies.stream()
         		.max(Comparator.comparing(movie -> movie.actors().size()))
@@ -112,7 +114,7 @@ public class ActorsAndMovies {
         
         // Question 7
         
-        System.out.println("\n******* L'acteur qui a joué dans le plus grand nombre de films");
+        System.out.println("\n******* L'acteur qui a joué dans le plus grand nombre de films\n");
         Stream<Actor> flatActeurs = 
         		movies.stream()
         		.flatMap(movie -> movie.actors().stream());
@@ -127,33 +129,33 @@ public class ActorsAndMovies {
         		collect.entrySet().stream()
         		.max(Map.Entry.comparingByValue())
         		.orElseThrow();
-        System.out.println(acteur);
+        System.out.println(acteur.getKey() + "\n Il a joué dans " + acteur.getValue() +" films");
         
         // Question 8
         
-        System.out.println("\n******* Question 7 avec uniquement un collector");
-        Collector<Movie, Object, Entry<Actor, Long>> myCollector = Collectors.collectingAndThen(
-			Collectors.flatMapping(
-					movie -> movie.actors().stream(),
-					Collectors.groupingBy(
-											Function.identity(),
-											Collectors.counting()
-										)
-									),
-					m ->m.entrySet().stream()
-					.max(Map.Entry.comparingByValue())
-					.orElseThrow()
-        		);
+        System.out.println("\n******* Question 7 avec uniquement un collecto\n");
+        Collector<Movie, Object, Entry<Actor, Long>> myCollector = 
+        		Collectors.collectingAndThen(
+						Collectors.flatMapping(
+								movie -> movie.actors().stream(),
+								Collectors.groupingBy(
+														Function.identity(),
+														Collectors.counting()
+													)
+												),
+								m ->m.entrySet().stream()
+								.max(Map.Entry.comparingByValue())
+								.orElseThrow()
+			        		);
 		Map.Entry<Actor, Long> acteur2 = 
         		movies.stream()
         		.collect(
 	        				myCollector
         				);
-        System.out.println(acteur2); 
-        //on obtient le même affichage que la question 7
+        System.out.println(acteur2.getKey() + "\n Il a joué dans " + acteur.getValue() +" films");
+        		//on obtient le même affichage que la question 7
         
-        
-        System.out.println("\n******* L'acteur qui a joué dans le plus grand nombre de films en une année ");
+        System.out.println("\n******* L'acteur qui a joué dans le plus grand nombre de films en une année \n");
         Map<Integer, Entry<Actor, Long>> acteurAnnee = movies.stream()
             	.collect(
             			Collectors.groupingBy(
@@ -165,23 +167,114 @@ public class ActorsAndMovies {
         		acteurAnnee.entrySet().stream()
 		        	.max(Comparator.comparing(e -> e.getValue().getValue()))
 		        	.orElseThrow();
-        System.out.println(acteur3);
+        System.out.println(
+			        		acteur3.getValue().getKey() + "\nIl a joué " 
+			                + acteur3.getValue().getValue() + " films en " 
+			        		+ acteur3.getKey()
+		        		);
         
         // Question 9-a
-        Comparator<Actor> cmp=
+        Comparator<Actor> comparatorActor=
 				Comparator.comparing(Actor::lastName).thenComparing(Actor::firstName);
         
         // Question 9-b
+        		
+        BiFunction<Stream<Actor>, Actor, Stream<Map.Entry<Actor, Actor>>>  steamPaireActeurs =
+        		(s, act) -> s.filter( 
+        								act2 -> comparatorActor.compare(act, act2) < 0)
+        								.map(sec -> Map.entry(sec, act)
+        							);
+        
+		
+        // Question 9-c
+        
+        Function<Movie, Stream<Actor>> streamActeur =
+        		m -> m.actors().stream();
+        		
+        // Question 9-d
+        
+        BiFunction<Movie, Actor, Stream<Map.Entry<Actor, Actor>>> streamPaireActeurFilm = 
+        		(film, act) -> steamPaireActeurs
+        						.apply (streamActeur.apply(film), act);
+        		
+        // Question 9-e
+        
+        Function<Movie, Stream<Map.Entry<Actor, Actor>>>  streamPaireActeurFilmFunction = 
+        		film -> film.actors().stream()
+        				.flatMap(
+        						act -> streamPaireActeurFilm.apply(film, act)
+        						);
         
         
-       /*BiFunction<Stream<Actor>, Actor, Map.Entry<Map<Actor,List<Actor>, Actor>>  fct =
-        		(s, act) -> Map.entry(
-        							s.collect(
-        										Collectors.groupingBy(Function.identity())
-        									  )
-        								,act);
-        */
-    }
+        // Question 9-f
+        System.out.println("\n******* Le nombre de paires d'acteurs dans le fichier");
+        		  
+        long nbPaireActeurFichier = 
+        		movies.stream()
+        		.flatMap(t -> streamPaireActeurFilmFunction
+        				.apply(t)
+        				)
+        		.count();
+        System.out.println(nbPaireActeurFichier);
+        
+        // Question 9-g
+        System.out.println("\n******* Les deux acteurs qui ont joué le plus souvent ensemble");
+        
+        Entry<Entry<Actor, Actor>, Long> paireActeursPlusEnsemble = 
+        		movies.stream()
+        		.flatMap(t -> streamPaireActeurFilmFunction
+        				.apply(t)
+        				)
+        		.collect(
+        							Collectors.groupingBy(
+        													Function.identity(),
+        													Collectors.counting()
+        												)
+        							)
+        		.entrySet().stream()
+        		.max(Map.Entry.comparingByValue())
+        		.orElseThrow();
+        
+        System.out.println(paireActeursPlusEnsemble.getKey().getKey() + "\n"
+        		+ paireActeursPlusEnsemble.getKey().getValue() + "\nIls ont joué " 
+        		+paireActeursPlusEnsemble.getValue() + " fois ensemble");
+        
+        //Question 10
+        System.out.println("\n******* Les deux acteurs qui ont joué le plus ensemble durant une année ");
+        	//Collector
+        Collector<Movie, Movie, Entry<Entry<Actor,Actor>, Long>> myCollector2 = 
+        		Collectors.collectingAndThen(
+		    			Collectors.flatMapping(
+		    					movie -> streamPaireActeurFilmFunction.apply(movie),
+		    					Collectors.groupingBy(
+		    											Function.identity(),
+		    											Collectors.counting()
+		    										)
+		    									),
+		    					map ->map.entrySet().stream()
+		    					.max(Map.Entry.comparingByValue())
+		    					.orElseThrow()
+            		);
+        
+        Entry<Integer,  Entry<Entry<Actor,Actor>, Long>> paireActeurAnnee=
+        		movies.stream()
+        		.collect(
+            			Collectors.groupingBy(
+            					y -> y.releaseYear(),
+            					myCollector2
+            	
+            			)
+            	)
+        		.entrySet().stream()
+		        .max(Comparator.comparing(e -> e.getValue().getValue()))
+		        .orElseThrow();
+        
+        System.out.println(
+        		paireActeurAnnee.getValue().getKey().getKey()
+        		+ "\n" + paireActeurAnnee.getValue().getKey().getValue()
+        		+ "\nIls ont joué le plus ensemble en " + paireActeurAnnee.getKey());
+        
+       }
 
     public Set<Movie> readMovies() {
 
