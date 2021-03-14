@@ -241,7 +241,7 @@ public class ActorsAndMovies {
         
         //Question 10
         System.out.println("\n******* Les deux acteurs qui ont joué le plus ensemble durant une année ");
-        	//Collector
+        	
         Collector<Movie, Movie, Entry<Entry<Actor,Actor>, Long>> myCollector2 = 
         		Collectors.collectingAndThen(
 		    			Collectors.flatMapping(
